@@ -1,0 +1,5 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Netlify automatically detects and configures the Next.js Runtime for Next.js projects.
