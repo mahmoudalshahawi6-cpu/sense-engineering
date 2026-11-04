@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { inArray } from "drizzle-orm";
+import { db } from "@/db";
+import { paymentSettings } from "@/db/schema";
 import { getLibraries, getSections, getResources, egp } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +12,19 @@ const defaultCovers: Record<string, string> = {
   electrical: "https://images.pexels.com/photos/8566473/pexels-photo-8566473.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
   programming: "https://images.pexels.com/photos/29320998/pexels-photo-29320998.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
 };
+
+function youtubeEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    let id = "";
+    if (host === "youtu.be" || host === "www.youtu.be") id = url.pathname.replace(/^\//, "").split("/")[0];
+    else if (["youtube.com", "www.youtube.com", "m.youtube.com"].includes(host)) {
+      id = url.searchParams.get("v") || url.pathname.match(/^\/(?:embed|shorts)\/([\w-]+)/)?.[1] || "";
+    }
+    return /^[\w-]{6,}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}?rel=0` : null;
+  } catch { return null; }
+}
 
 const libraryEmojis: Record<string, string> = {
   mechatronics: "🤖",
@@ -92,6 +108,12 @@ export default async function HomePage() {
     return { id: lib.id, sections: sections.length, items: resources.filter((resource) => resource.published).length };
   }));
   const previewLibrary = libraries.find((lib) => Boolean(lib.videoUrl));
+  const settingRows = await db.select({ key: paymentSettings.key, value: paymentSettings.value }).from(paymentSettings).where(inArray(paymentSettings.key, ["homepage_preview_url", "homepage_preview_caption", "homepage_preview_enabled"]));
+  const settingMap = new Map(settingRows.map((row) => [row.key, row.value]));
+  const homepageVideoUrl = settingMap.get("homepage_preview_url") || "";
+  const homepageVideoCaption = settingMap.get("homepage_preview_caption") || "شاهد شرحًا مجانيًا عن مكتبات SENSE وطريقة الاستفادة منها.";
+  const homepageVideoEnabled = settingMap.get("homepage_preview_enabled") === "true" && Boolean(homepageVideoUrl);
+  const youtubePreview = homepageVideoEnabled ? youtubeEmbedUrl(homepageVideoUrl) : null;
 
   return (
     <div>
@@ -122,7 +144,11 @@ export default async function HomePage() {
               <Link className="btn-primary" href="/libraries">
                 استكشف المكتبات
               </Link>
-              {previewLibrary ? (
+              {homepageVideoEnabled ? (
+                <Link className="btn-ghost" href="#free-preview">
+                  <span aria-hidden="true">▶</span> شاهد الفيديو المجاني
+                </Link>
+              ) : previewLibrary ? (
                 <Link className="btn-ghost" href={`/library/${previewLibrary.slug}#video`}>
                   <span aria-hidden="true">▶</span> شاهد فيديو المعاينة
                 </Link>
@@ -250,6 +276,30 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {homepageVideoEnabled && (
+        <section id="free-preview" className="container-page scroll-mt-24 py-14">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-6 text-center">
+              <span className="chip mb-3">FREE PREVIEW · معاينة مجانية</span>
+              <h2 className="font-display text-2xl font-extrabold text-white sm:text-3xl">اتعرّف على مكتبات SENSE قبل الشراء</h2>
+              <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-300">{homepageVideoCaption}</p>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-cyan-400/20 bg-black shadow-[0_25px_80px_-40px_rgba(34,211,238,0.35)]">
+              {youtubePreview ? (
+                <div className="relative aspect-video w-full">
+                  <iframe src={youtubePreview} title="فيديو المعاينة المجاني لمنصة SENSE" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="absolute inset-0 h-full w-full" />
+                </div>
+              ) : (
+                <video src={homepageVideoUrl} controls playsInline preload="metadata" className="aspect-video w-full bg-black" />
+              )}
+            </div>
+            <div className="mt-5 flex justify-center">
+              <Link href="/libraries" className="btn-primary text-sm">استكشف المكتبات المتاحة</Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ----------------- LIBRARIES CATALOGUE ----------------- */}
       <section id="libraries" className="container-page py-16">

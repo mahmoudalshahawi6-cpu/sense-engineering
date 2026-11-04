@@ -243,14 +243,9 @@ export default async function AdminLibraryEditPage({
         </div>
 
         <div className="rounded-2xl border border-cyan-400/25 bg-cyan-400/10 p-4 text-xs leading-6 text-slate-200">
-          <p className="font-bold text-cyan-200">رفع ملف من جهازك — خطوة بخطوة</p>
-          <ol className="mt-2 list-decimal space-y-1 pe-5">
-            <li>اختر القسم الذي ينتمي إليه الملف.</li>
-            <li>اكتب عنوانًا واضحًا، واختر نوع المحتوى «ملف محمي» عند رفع مرفق.</li>
-            <li>اضغط «اختيار ملف» وحدد الملف من الكمبيوتر، ثم احفظ.</li>
-            <li>فعّل «منشور» عندما تنتهي من مراجعته. اتركه غير منشور لو ما زلت تجهزه.</li>
-          </ol>
-          <p className="mt-2 text-[11px] text-slate-300">الصيغ المدعومة في العرض داخل الموقع: PDF، الصور، MP4/WEBM، TXT وMD. الحد الحالي 4 ميجابايت للملف الواحد. لتحويل Word أو Excel إلى محتوى قابل للعرض داخل المكتبة، احفظه PDF أولًا. ارفع كل عنصر في سجل مستقل.</p>
+          <p className="font-bold text-cyan-200">إدارة الملفات أصبحت أسهل</p>
+          <p className="mt-1">افتح مركز رفع الملفات، اختار المكتبة والقسم، ثم اسحب عدة ملفات من جهازك مرة واحدة. كل ملف يضاف تلقائيًا إلى المحتوى ويمكنك تحديد هل هو مجاني أو منشور.</p>
+          <Link href="/admin/content" className="btn-primary mt-3 inline-flex text-xs"><FileText size={13} /> فتح مركز رفع الملفات</Link>
         </div>
 
         <div className="space-y-2">
@@ -309,7 +304,7 @@ export default async function AdminLibraryEditPage({
           <div>
             <label className="field-label text-[11px]">النوع</label>
             <select name="kind" defaultValue={editingResource?.kind ?? "document"} className="field text-xs">
-              {Object.entries(kindLabel).map(([k, label]) => (
+              {Object.entries(kindLabel).filter(([k]) => editingResource || k !== "file").map(([k, label]) => (
                 <option key={k} value={k}>
                   {label}
                 </option>
@@ -333,16 +328,12 @@ export default async function AdminLibraryEditPage({
             <input name="duration" defaultValue={editingResource?.duration} className="field text-xs font-tech" dir="ltr" placeholder="30 min" />
           </div>
           <div>
-            <label className="field-label text-[11px]">اختيار ملف من جهازك</label>
-            <input
-              name="file"
-              type="file"
-              accept=".pdf,.png,.jpg,.jpeg,.webp,.mp4,.webm,.txt,.md"
-              className="field text-xs file:me-2 file:rounded-lg file:border-0 file:bg-cyan-400/15 file:px-3 file:py-2 file:text-cyan-200"
-            />
+            <label className="field-label text-[11px]">رفع الملفات من جهازك</label>
+            <Link href="/admin/content" className="btn-primary inline-flex text-xs"><FileText size={13} /> فتح مركز رفع الملفات</Link>
             {editingResource?.fileName && (
-              <p className="mt-1 text-[11px] text-slate-400">الملف الحالي: {editingResource.fileName} — اختيار ملف جديد يستبدله.</p>
+              <p className="mt-1 text-[11px] text-slate-400">الملف الحالي: {editingResource.fileName}. استخدم مركز رفع الملفات لإضافة ملفات جديدة أو استبدال هذا العنصر.</p>
             )}
+            <p className="mt-1 text-[11px] text-slate-400">مركز الرفع يدعم اختيار عدة ملفات دفعة واحدة، ويضيف كل ملف تلقائيًا إلى القسم المختار.</p>
           </div>
           <div>
             <label className="field-label text-[11px]">الترتيب</label>

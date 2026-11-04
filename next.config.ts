@@ -6,8 +6,9 @@ const cspHeader = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com data:;
   img-src 'self' data: blob: https://images.pexels.com https://i.ytimg.com;
-  frame-src 'self' https://www.youtube.com https://youtube.com;
-  connect-src 'self';
+  frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com;
+  media-src 'self' blob: https://*.supabase.co https://*.supabase.in;
+  connect-src 'self' https://*.supabase.co https://*.supabase.in;
   object-src 'none';
   base-uri 'self';
   form-action 'self';

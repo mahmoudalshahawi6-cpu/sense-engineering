@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { desc, eq, sql } from "drizzle-orm";
-import { Users, Banknote, Clock3, LibraryBig, ArrowLeft, Download } from "lucide-react";
+import { Users, Banknote, Clock3, LibraryBig, ArrowLeft, Download, UploadCloud, Film, Settings2 } from "lucide-react";
 import { db } from "@/db";
 import { entitlements, libraries, orders, users } from "@/db/schema";
 import { egp, withPrices } from "@/lib/data";
@@ -72,6 +72,21 @@ export default async function AdminDashboard() {
         <Link href="/admin/orders" className="btn-primary text-xs">
           مراجعة الطلبات
           <ArrowLeft size={15} />
+        </Link>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <Link href="/admin/content" className="card-surface group flex items-center gap-3 p-4 transition hover:border-cyan-400/40 hover:bg-cyan-400/5">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cyan-400/10 text-cyan-300"><UploadCloud size={20}/></span>
+          <span className="min-w-0"><strong className="block text-sm text-white">ارفع ملفات من جهازك</strong><span className="mt-1 block text-[11px] text-slate-400">اختار المكتبة والقسم وارفع عدة ملفات</span></span>
+        </Link>
+        <Link href="/admin/settings#homepage-video" className="card-surface group flex items-center gap-3 p-4 transition hover:border-cyan-400/40 hover:bg-cyan-400/5">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cyan-400/10 text-cyan-300"><Film size={20}/></span>
+          <span className="min-w-0"><strong className="block text-sm text-white">غيّر فيديو الرئيسية</strong><span className="mt-1 block text-[11px] text-slate-400">الصق رابط YouTube أو ارفع فيديو</span></span>
+        </Link>
+        <Link href="/admin/libraries" className="card-surface group flex items-center gap-3 p-4 transition hover:border-cyan-400/40 hover:bg-cyan-400/5">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cyan-400/10 text-cyan-300"><Settings2 size={20}/></span>
+          <span className="min-w-0"><strong className="block text-sm text-white">إدارة المكتبات والأقسام</strong><span className="mt-1 block text-[11px] text-slate-400">عدّل الاسم والسعر والغلاف والأقسام</span></span>
         </Link>
       </div>
 

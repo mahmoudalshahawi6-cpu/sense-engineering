@@ -6,6 +6,7 @@ import {
   Receipt,
   Users,
   LibraryBig,
+  UploadCloud,
   Settings,
   MessageSquare,
   ArrowUpRight,
@@ -20,8 +21,9 @@ const nav = [
   { href: "/admin", label: "الإحصائيات", Icon: LayoutDashboard },
   { href: "/admin/orders", label: "الطلبات والمدفوعات", Icon: Receipt },
   { href: "/admin/users", label: "المستخدمون", Icon: Users },
-  { href: "/admin/libraries", label: "المكتبات والمحتوى", Icon: LibraryBig },
-  { href: "/admin/settings", label: "إعدادات الدفع", Icon: Settings },
+  { href: "/admin/libraries", label: "إدارة المكتبات", Icon: LibraryBig },
+  { href: "/admin/content", label: "رفع الملفات", Icon: UploadCloud },
+  { href: "/admin/settings", label: "الإعدادات والدفع", Icon: Settings },
   { href: "/admin/messages", label: "رسائل التواصل", Icon: MessageSquare },
 ];
 

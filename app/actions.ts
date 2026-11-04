@@ -742,6 +742,40 @@ export async function adminDeleteResourceAction(formData: FormData) {
   redirect(`/admin/libraries/${libraryId}?deleted=1`);
 }
 
+export async function adminSaveHomepageVideoAction(formData: FormData) {
+  await requireAdmin();
+  const videoUrl = formDataString(formData, "homepageVideoUrl", 700);
+  const caption = formDataString(formData, "homepageVideoCaption", 300);
+  const enabled = formData.get("homepageVideoEnabled") === "on";
+  if (videoUrl) {
+    let valid = isSupportedYouTubeUrl(videoUrl);
+    try {
+      const parsed = new URL(videoUrl);
+      const isVideoFile = parsed.protocol === "https:" && /\.(mp4|webm)(?:$|\?)/i.test(parsed.pathname + parsed.search);
+      valid = valid || isVideoFile;
+    } catch {
+      valid = false;
+    }
+    if (!valid) fail("/admin/settings", "أدخل رابط YouTube صحيحًا أو رابط MP4/WEBM يبدأ بـ https://.");
+  }
+  const entries = [
+    { key: "homepage_preview_url", label: "فيديو المعاينة المجاني للرئيسية", value: videoUrl },
+    { key: "homepage_preview_caption", label: "وصف فيديو المعاينة", value: caption },
+    { key: "homepage_preview_enabled", label: "إظهار فيديو المعاينة في الصفحة الرئيسية", value: enabled ? "true" : "false" },
+  ];
+  for (const item of entries) {
+    const existing = await db.select().from(paymentSettings).where(eq(paymentSettings.key, item.key)).limit(1);
+    if (existing.length) {
+      await db.update(paymentSettings).set({ label: item.label, value: item.value }).where(eq(paymentSettings.id, existing[0].id));
+    } else {
+      await db.insert(paymentSettings).values(item);
+    }
+  }
+  revalidatePath("/");
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings?homepageVideo=saved");
+}
+
 export async function adminSendTestEmailAction() {
   const admin = await requireAdmin();
   if (!emailIsConfigured()) redirect("/admin/settings?email=missing");

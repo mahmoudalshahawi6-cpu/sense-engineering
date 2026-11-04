@@ -2,11 +2,12 @@ import { Save, Wallet, Landmark, Zap, Info, UserCheck, Mail, CheckCircle2, Alert
 import { db } from "@/db";
 import { paymentSettings } from "@/db/schema";
 import { adminSavePaymentSettingsAction, adminSendTestEmailAction } from "@/app/actions";
+import HomepageVideoManager from "@/components/admin/HomepageVideoManager";
 import { emailIsConfigured } from "@/lib/email";
-import { privateStorageIsConfigured } from "@/lib/storage";
+import { directUploadsAreConfigured, privateStorageIsConfigured } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "إعدادات الدفع | لوحة التحكم" };
+export const metadata = { title: "الإعدادات والدفع | لوحة التحكم" };
 
 const keys = [
   { key: "beneficiary", label: "اسم المستفيد", Icon: UserCheck, hint: "الاسم المسجّل في InstaPay والمحافظ الإلكترونية" },
@@ -19,24 +20,29 @@ const keys = [
 export default async function AdminSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; homepageVideo?: string }>;
 }) {
   const sp = await searchParams;
   const emailConfigured = emailIsConfigured();
   const cloudStorageConfigured = privateStorageIsConfigured();
+  const directUploadsReady = directUploadsAreConfigured();
   const senderEmail = process.env.RESEND_FROM_EMAIL?.trim() || "غير مضبوط";
   const rows = await db.select().from(paymentSettings);
   const map = new Map(rows.map((r) => [r.key, r]));
+  const homepageVideoUrl = map.get("homepage_preview_url")?.value ?? "";
+  const homepageVideoCaption = map.get("homepage_preview_caption")?.value ?? "شاهد شرح المكتبات وطريقة الاستفادة منها مجانًا.";
+  const homepageVideoEnabled = map.get("homepage_preview_enabled")?.value === "true";
 
   return (
     <div className="space-y-6">
       <div>
-        <span className="chip mb-2">PAYMENT SETTINGS · إعدادات الدفع</span>
-        <h1 className="font-display text-2xl font-black text-white sm:text-3xl">بيانات استقبال المدفوعات</h1>
-        <p className="mt-2 text-xs leading-6 text-slate-300">
-          هذه البيانات تظهر للطلاب في صفحة شراء أي مكتبة ويمكنك تعديل أرقامك في أي وقت.
-        </p>
+        <span className="chip mb-2">SENSE SETTINGS · إعدادات المنصة</span>
+        <h1 className="font-display text-2xl font-black text-white sm:text-3xl">تحكم في إعدادات SENSE</h1>
+        <p className="mt-2 text-xs leading-6 text-slate-300">من هنا تدير فيديو الصفحة الرئيسية، البريد الإلكتروني، التخزين، وطرق الدفع — من مكان واحد.</p>
       </div>
+
+      {sp.homepageVideo === "saved" && <p className="rounded-lg border border-emerald-400/25 bg-emerald-400/10 p-3 text-xs text-emerald-200">تم حفظ إعدادات فيديو الصفحة الرئيسية.</p>}
+      <HomepageVideoManager currentUrl={homepageVideoUrl} caption={homepageVideoCaption} enabled={homepageVideoEnabled} storageReady={directUploadsReady} />
 
       <section className="card-surface p-5 sm:p-6 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -82,8 +88,9 @@ export default async function AdminSettingsPage({
         <p className="text-xs leading-6 text-slate-300">
           {cloudStorageConfigured
             ? "الملفات الخاصة تُرفع إلى Supabase Storage. تأكد أن حاوية sense-private موجودة وخاصّة (Private)."
-            : "الموقع يستخدم التخزين المحلي فقط حاليًا. هذا مناسب للتجربة على جهازك، لكنه غير مناسب لنشر Netlify/Vercel لأن الملفات قد لا تبقى بعد إعادة النشر. اضبط SUPABASE_URL وSUPABASE_SERVICE_ROLE_KEY وأنشئ الحاوية الخاصة sense-private قبل رفع ملفات العملاء."}
+            : "الموقع يستخدم التخزين المحلي فقط حاليًا. هذا مناسب للتجربة على جهازك، لكنه غير مناسب لنشر Netlify/Vercel لأن الملفات قد لا تبقى بعد إعادة النشر. اضبط SUPABASE_URL وSUPABASE_SERVICE_ROLE_KEY وNEXT_PUBLIC_SUPABASE_ANON_KEY، وأنشئ الحاويتين sense-private (خاصة) وsense-media (عامة للصور وفيديو المعاينة)."}
         </p>
+        {!directUploadsReady && <p className="text-[11px] leading-5 text-amber-200">لرفع الملفات من المتصفح مباشرة، أضف أيضًا NEXT_PUBLIC_SUPABASE_ANON_KEY من إعدادات مشروع Supabase إلى متغيرات بيئة Netlify.</p>}
         <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="btn-ghost inline-flex text-xs">فتح لوحة Supabase</a>
       </section>
 
